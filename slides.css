@@ -1,0 +1,506 @@
+/*! Based on The Monospace Web, © 2024 Oskar Wickström, MIT License:
+   https://github.com/owickstrom/the-monospace-web/blob/main/LICENSE.md */
+
+/* Everything sits on a character grid: columns 1ch wide, rows one line tall; CJK characters take
+   two columns. Larger type sits in boxes a whole number of lines tall.
+
+   A slide is a section, a fixed number of columns and lines. Without slides.js, and in print, the
+   slides follow one another down the page; with it, one shows at a time, scaled to the window.
+
+   Rules are mostly box shadows, not borders: browsers round border widths to device pixels, so
+   padding that makes room for a border drifts off the grid at fractional zoom. */
+
+/* ---- fonts, colours, sizes ---- */
+:root {
+  --font-family: "PlemoCJK SC", monospace;
+  --font-weight-normal: 450;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  /* exactly 1.6 times the font size, where the font's ss16 box drawing joins across lines; at
+     25px a line is 40px */
+  --line-height: 1.6rem;
+  --border-thickness: 2px;
+  --text-color: #222;
+  --text-color-alt: #666;
+  --background-color: #fff;
+  --background-color-alt: #f2f2f2;
+  /* a slide, close to 16:9 (1267.2px by 720px; @page below repeats it) */
+  --columns: 96;
+  --lines: 18;
+  /* the side margins. With a line above and three below (a blank one, the footer, a blank one),
+     content has 88 columns by 14 lines */
+  --slide-padding: 4ch;
+
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-normal);
+  font-size: 25px;
+}
+/* Han characters in each region's forms, by lang; the deck links the matching webfont package
+   (README). Every region's font has the same widths, so the grid holds */
+:lang(zh-Hant), :lang(zh-TW), :lang(zh-HK), :lang(zh-MO) {
+  font-family: "PlemoCJK TC", var(--font-family);
+}
+:lang(ja) {
+  font-family: "PlemoCJK JP", var(--font-family);
+}
+:lang(ko) {
+  font-family: "PlemoCJK KR", var(--font-family);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #e6e6e6;
+    --text-color-alt: #999;
+    --background-color: #121212;
+    --background-color-alt: #1f1f1f;
+  }
+}
+
+/* ---- reset ---- */
+html, body, div, span, main, article, aside, section, header, footer, nav,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, code, del, em, strong, sup, time, img, video,
+dl, dt, dd, ol, ul, li, table, thead, tbody, tr, th, td, details, summary, figure, figcaption {
+  padding: 0;
+  border: 0;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+* {
+  box-sizing: border-box;
+}
+/* a line between siblings by default */
+* + * {
+  margin-top: var(--line-height);
+}
+
+/* ---- page ---- */
+html {
+  margin: 0;
+  background: var(--background-color);
+  color: var(--text-color);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+body {
+  margin: 0;
+  line-height: var(--line-height);
+}
+@page {
+  size: 1267.2px 720px;
+  margin: 0;
+}
+
+/* ---- slides ---- */
+/* what doesn't fit is cut off rather than spilling over the footer; tools/check.mjs reports it */
+section {
+  position: relative;
+  width: calc(var(--columns) * 1ch);
+  height: calc(var(--lines) * var(--line-height));
+  margin: 0 auto;
+  padding: var(--line-height) var(--slide-padding) calc(var(--line-height) * 3);
+  overflow: hidden;
+  break-after: page;
+}
+section > :first-child {
+  margin-top: 0;
+}
+section > :last-child {
+  margin-bottom: 0;
+}
+/* the footer: the deck's title and the slide's number, both set by slides.js */
+section:before, section:after {
+  position: absolute;
+  bottom: var(--line-height);
+  color: var(--text-color-alt);
+}
+section:before {
+  content: attr(data-deck);
+  left: var(--slide-padding);
+}
+section:after {
+  content: attr(data-no);
+  right: var(--slide-padding);
+}
+
+/* one at a time, placed and scaled by slides.js. The others stay in layout, so every font the
+   deck needs is fetched at the start, not as each slide comes up */
+@media screen {
+  html.deck {
+    height: 100%;
+    overflow: hidden;
+  }
+  html.deck section {
+    position: fixed;
+    left: var(--deck-x);
+    top: var(--deck-y);
+    margin: 0;
+    transform-origin: 0 0;
+    scale: var(--deck-scale);
+    visibility: hidden;
+  }
+  html.deck section.current {
+    visibility: visible;
+  }
+}
+
+/* ---- text ---- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-bold);
+  margin: var(--line-height) 0;
+  line-height: var(--line-height);
+}
+h1 {
+  font-size: 3em;
+  line-height: calc(var(--line-height) * 3);
+}
+/* a slide's title */
+h2 {
+  font-size: 1.5em;
+  line-height: calc(var(--line-height) * 2);
+  /* sit at the bottom of the two-line box: shift the glyphs (1.25em tall) down by half the
+     room around them. A relative offset leaves what follows on the grid */
+  position: relative;
+  top: calc((var(--line-height) * 2 - 1.25em) / 2);
+}
+h3 {
+  font-size: 1.25em;
+}
+p {
+  margin-bottom: var(--line-height);
+  word-break: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+strong {
+  font-weight: var(--font-weight-bold);
+}
+em {
+  font-style: italic;
+}
+/* 0.15em clears CJK characters; around 0.2em the line grazes descenders and only Firefox breaks
+   it. Whole pixels only: browsers round 1.5px differently */
+a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+a:link, a:visited {
+  color: var(--text-color);
+}
+/* footnote marks, without growing the line */
+sup {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  vertical-align: super;
+  line-height: 0;
+  width: calc(1ch / 0.75);
+  font-size: .75rem;
+}
+/* inline code: a tint, no padding (it would shift the text off the grid), and kept to one line;
+   one too long for its line is reported by tools/check.mjs */
+:not(pre) > code {
+  white-space: nowrap;
+  background: var(--background-color-alt);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* no height, a blank line either side, the rule on the grid line between. flow-root keeps the
+   two margins from collapsing; overflow: visible because browsers clip hr by default */
+hr {
+  position: relative;
+  display: flow-root;
+  overflow: visible;
+  height: 0;
+  margin: var(--line-height) 0;
+  border: none;
+  color: var(--text-color);
+}
+hr:after {
+  display: block;
+  content: "";
+  position: absolute;
+  top: calc(var(--border-thickness) / -2);
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-top: var(--border-thickness) solid var(--text-color);
+}
+
+/* ---- lists ---- */
+ul, ol {
+  padding: 0;
+  margin: 0 0 var(--line-height);
+}
+ul {
+  list-style-type: square;
+  padding: 0 0 0 2ch;
+}
+ol {
+  list-style-type: none;
+  counter-reset: item;
+}
+ol ul, ol ol, ul ol, ul ul {
+  padding: 0 0 0 3ch;
+  margin: 0;
+}
+/* float: the number stays on the first line when the item starts with a block */
+ol li:before {
+  float: left;
+  white-space: pre;
+  content: counter(item) ". ";
+  counter-increment: item;
+  font-weight: var(--font-weight-medium);
+}
+/* counters() only when nested, or a later list would continue the previous one's numbering */
+li ol li:before {
+  content: counters(item, ".") ". ";
+}
+li {
+  margin: 0;
+}
+li::marker {
+  line-height: 0;
+}
+/* task lists */
+li:has(> input[type=checkbox]:first-child) {
+  list-style: none;
+}
+ul:has(> li > input[type=checkbox]:first-child) {
+  padding-left: 0;
+}
+li > input[type=checkbox]:first-child {
+  margin-right: 1ch;
+}
+dl {
+  margin: 0 0 var(--line-height);
+}
+dt {
+  font-weight: var(--font-weight-bold);
+}
+dd {
+  margin: 0 0 0 2ch;
+}
+blockquote {
+  margin: 0 0 var(--line-height);
+  padding-left: 2ch;
+  box-shadow: inset var(--border-thickness) 0 var(--text-color);
+}
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---- tables ---- */
+/* half a line down: text on the grid, rules between the lines */
+table {
+  position: relative;
+  top: calc(var(--line-height) / 2);
+  width: round(down, 100%, 1ch);
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0 0 calc(var(--line-height) * 2);
+}
+/* each cell draws half a rule either side of its edges */
+th, td {
+  --half: calc(var(--border-thickness) / 2);
+  box-shadow: 0 0 0 var(--half) var(--text-color), inset 0 0 0 var(--half) var(--text-color);
+  padding: calc(var(--line-height) / 2) 1ch;
+  line-height: var(--line-height);
+  vertical-align: top;
+  text-align: left;
+}
+/* don't squeeze narrow columns to one CJK character per line */
+th {
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+/* ---- code and drawings ---- */
+/* hwid: box drawing one column wide, as in a terminal; .ascii-cjk drawings keep it two. A line
+   too long for the slide scrolls, which a talk can't do: tools/check.mjs reports it */
+pre {
+  white-space: pre;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: var(--line-height) 0;
+  font-feature-settings: "hwid", "ss16";
+}
+pre.ascii-cjk {
+  font-feature-settings: "ss16";
+}
+/* code blocks, ruled like tables. The sides are borders, so long lines scroll inside them; top and
+   bottom are background lines half a line in, and the clip trims the sides to meet them. Not
+   directly inside a details, which has a box already */
+:not(details) > pre:has(> code) {
+  --half: calc(var(--border-thickness) / 2);
+  margin-inline: calc(-1 * var(--half));
+  padding: var(--line-height) calc(2ch - var(--half));
+  border-inline: var(--border-thickness) solid var(--text-color);
+  background:
+    linear-gradient(var(--text-color) 0 0) 0 calc(var(--line-height) / 2 - var(--half)) / 100% var(--border-thickness),
+    linear-gradient(var(--text-color) 0 0) 0 calc(100% - var(--line-height) / 2 + var(--half)) / 100% var(--border-thickness);
+  background-repeat: no-repeat;
+  background-origin: border-box;
+  clip-path: inset(calc(var(--line-height) / 2 - var(--half)) 0);
+}
+
+/* ---- figures and media ---- */
+/* captions sit half a line down, off the grid; slides.js pads each figure to whole lines */
+figure {
+  margin: var(--line-height) 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+figure pre {
+  margin: 0;
+}
+figcaption {
+  margin-top: calc(var(--line-height) / 2);
+  color: var(--text-color-alt);
+}
+/* images are never scaled up, and centred with their captions; drawings stay left-aligned */
+img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  margin-inline: auto;
+  font-style: italic;
+  color: var(--text-color-alt);
+}
+video {
+  display: block;
+  width: 100%;
+}
+figure:has(> img, > video) figcaption {
+  text-align: center;
+}
+
+/* ---- details ---- */
+/* ruled like tables, by a positioned box that takes no room */
+details {
+  position: relative;
+  padding: var(--line-height) 1ch;
+  margin-bottom: var(--line-height);
+}
+details:before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--line-height) / 2 - var(--border-thickness) / 2) calc(var(--border-thickness) / -2);
+  border: var(--border-thickness) solid var(--text-color);
+  pointer-events: none;
+}
+summary {
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+details[open] summary {
+  margin-bottom: var(--line-height);
+}
+/* hwid: a one-column arrow, then a space */
+details ::marker {
+  content: '▶ ';
+  font-feature-settings: "hwid";
+}
+details[open] ::marker {
+  content: '▼ ';
+}
+details :last-child {
+  margin-bottom: 0;
+}
+
+/* ---- checkboxes (task lists) ---- */
+input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  vertical-align: top;
+  width: 2ch;
+  height: 2ch;
+  margin: calc((var(--line-height) - 2ch) / 2) 0;
+  padding: 0;
+  border: var(--border-thickness) solid var(--text-color);
+  background: var(--background-color);
+  color: var(--text-color);
+  font: inherit;
+  cursor: pointer;
+}
+input[type=checkbox]:checked:before {
+  content: "";
+  width: 1ch;
+  height: 1ch;
+  background: var(--text-color);
+}
+input:focus {
+  --border-thickness: 3px;
+  outline: none;
+}
+
+/* ---- layouts ---- */
+/* columns side by side; the gaps leave each a whole number of columns wide (42 and 42, 28 three
+   times, 56 and 28) */
+.cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 4ch;
+  margin-bottom: var(--line-height);
+}
+.cols.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 2ch;
+}
+.cols.aside {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+.cols > * {
+  margin-block: 0;
+}
+.cols > * > :first-child {
+  margin-top: 0;
+}
+.cols > * > :last-child {
+  margin-bottom: 0;
+}
+
+/* the cover and chapter slides stand on the bottom of the content area, without a footer.
+   Margins in a flex column add up rather than collapse, so their children set their own */
+.cover, .chapter {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.cover:before, .cover:after, .chapter:before, .chapter:after {
+  content: none;
+}
+.cover > *, .chapter > * {
+  margin: 0;
+}
+.cover > h1 + p, .chapter > h2 + p {
+  margin-top: var(--line-height);
+}
+.cover > hr {
+  margin: var(--line-height) 0;
+}
+/* a line of small print with its ends apart: author and date, say */
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 2ch;
+  color: var(--text-color-alt);
+}
+.meta > * {
+  margin-top: 0;
+}
+/* a chapter's number; at 3em each digit is three columns wide */
+.no {
+  font-size: 3em;
+  line-height: calc(var(--line-height) * 3);
+  height: calc(var(--line-height) * 3);
+  /* the digit's stem, not its side bearing, on the margin */
+  position: relative;
+  left: -0.05em;
+  font-weight: var(--font-weight-bold);
+}
+.chapter h2 {
+  font-size: 2em;
+}

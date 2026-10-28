@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monospace Slide</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plemocjk-sc@0.0.5/PlemoCJK-SC.min.css">
+  <link rel="stylesheet" href="slides.css">
+</head>
+<body>
+
+<section class="cover">
+  <h1>Monospace Slide</h1>
+  <p>把每一页排在一张字符网格上</p>
+  <hr>
+  <p class="meta"><span>Nexustar</span><span>2026-10-10</span></p>
+</section>
+
+<section>
+  <h2>一页就是一张字符网格</h2>
+  <p>西文字符占一列，汉字占两列，标题、表格和代码块的高度都是整数行。动笔之前，就能数出一页放得下多少东西。</p>
+  <ul>
+    <li>整页 96 列 × 18 行，接近 16:9</li>
+    <li>内容区 88 列 × 14 行：左右各留 4 列，上留 1 行，下留 3 行</li>
+    <li>标题占 2 行，后面空 1 行，正文还剩 <strong>11 行</strong></li>
+    <li>页脚里的标题和页码由 <code>slides.js</code> 自动填写</li>
+  </ul>
+  <p>写多了，超出的部分会被裁掉，<code>npm run check</code> 会指出是哪一页、多了几行。</p>
+</section>
+
+<section class="chapter">
+  <p class="no">01</p>
+  <h2>版式</h2>
+  <p>封面、章节页、分栏，各对应 <code>section</code> 上的一个 class。</p>
+</section>
+
+<section>
+  <h2>两栏：各 42 列</h2>
+  <div class="cols">
+    <div>
+      <p>最常见的用法：左边写说明，右边放代码。</p>
+      <ul>
+        <li>栏间距 4 列</li>
+        <li>代码块两侧各占 2 列，栏内还能放 38 列的代码</li>
+        <li>每栏的内容都从顶端排起</li>
+      </ul>
+    </div>
+    <pre><code>&lt;div class="cols"&gt;
+  &lt;div&gt;
+    &lt;p&gt;说明&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;pre&gt;&lt;code&gt;代码&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</code></pre>
+  </div>
+</section>
+
+<section>
+  <h2>三栏：各 28 列</h2>
+  <div class="cols three">
+    <div>
+      <h3>列</h3>
+      <p>宽度以 <code>ch</code> 为单位。西文一列、汉字两列，中英文混排照样对齐。</p>
+    </div>
+    <div>
+      <h3>行</h3>
+      <p>行高是字号的 1.6 倍，字体的制表符正好在这个高度上下相接。</p>
+    </div>
+    <div>
+      <h3>线</h3>
+      <p>线画在两行或两列之间的缝里，统一 2px 粗。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>主栏加侧栏：56 列和 28 列</h2>
+  <div class="cols aside">
+    <table>
+      <thead>
+        <tr><th>class</th><th>用途</th><th>正文行数</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>cover</code></td><td>封面，内容贴底</td><td>14</td></tr>
+        <tr><td><code>chapter</code></td><td>章节页，内容贴底</td><td>14</td></tr>
+        <tr><td>默认</td><td>标题加正文</td><td>11</td></tr>
+      </tbody>
+    </table>
+    <div>
+      <p>表格每行占 2 行：文字在网格上，线在两行之间。</p>
+      <p>整张表另外多占 1 行，留给上下两条边线。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>代码：一行最多 84 列</h2>
+  <p>代码块和正文同一个颜色。超过 84 列的行，检查脚本会报出来。</p>
+  <pre><code>function padToLines() {
+  const line = lineHeight();
+  for (const element of document.querySelectorAll("figure")) {
+    const rest = element.getBoundingClientRect().height % line;
+    if (rest > 0.01) element.style.paddingBottom = `${line - rest}px`;
+  }
+}</code></pre>
+</section>
+
+<section>
+  <h2>字符画</h2>
+  <figure>
+<pre>┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+│  index.html  │─────▶│  check.mjs   │─────▶│  shots/*.png │
+└──────────────┘      └──────┬───────┘      └──────────────┘
+                             │
+                             ▼
+                      ┌──────────────┐
+                      │  溢出 · 离格 │
+                      └──────────────┘</pre>
+    <figcaption>放在 <code>figure</code> 里的 <code>pre</code> 按插图显示，制表符占一列。</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>引用和编号</h2>
+  <blockquote>
+    <p>一页只讲一件事，讲清楚了再翻页。</p>
+  </blockquote>
+  <ol>
+    <li>先定这一页的结论，写进标题</li>
+    <li>再选版式
+      <ol>
+        <li>要对比就分栏</li>
+        <li>要展示代码就单栏</li>
+      </ol>
+    </li>
+    <li>最后数行数，超了就拆成两页</li>
+  </ol>
+</section>
+
+<section class="chapter">
+  <p class="no">02</p>
+  <h2>检查</h2>
+  <p>改完渲染一遍，对着截图检查每一页。</p>
+</section>
+
+<section>
+  <h2>改完就跑一遍</h2>
+  <pre><code>$ npm run check
+01  ok
+02  FAIL
+    &lt;pre&gt; "function padToLines() {…" ends 2 lines below the content area
+03  ok</code></pre>
+  <ul>
+    <li><strong>放不下</strong>：内容超出了内容区，或者代码行太长，脚本以 1 退出</li>
+    <li><strong>离格</strong>：某个元素的上沿偏离了网格，作为警告列出</li>
+    <li>截图都在 <code>shots/</code> 里，交付前逐张过一遍</li>
+  </ul>
+</section>
+
+<script src="slides.js"></script>
+</body>
+</html>

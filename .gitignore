@@ -1,0 +1,4 @@
+/node_modules/
+# written by tools/check.mjs
+shots/
+*.pdf

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlemoCJK</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plemocjk-sc@0.0.5/PlemoCJK-SC.min.css">
+  <link rel="stylesheet" href="../slides.css">
+</head>
+<body>
+
+<section class="cover">
+  <h1>PlemoCJK</h1>
+  <p>中英文混排的等宽字体：半角和全角宽度 1:2</p>
+  <hr>
+  <p class="meta"><span>Nexustar</span><span>2026-10-05</span></p>
+</section>
+
+<section>
+  <h2>是什么</h2>
+  <p>它是 PlemolJP 的扩展。PlemolJP 用 IBM Plex Mono 和 IBM Plex Sans JP 合成了一款日文编程字体，PlemoCJK 用同样的方法做了四个地区的版本：</p>
+  <ul>
+    <li><strong>SC</strong> 简体中文　<strong>TC</strong> 繁体中文　<strong>JP</strong> 日文　<strong>KR</strong> 韩文</li>
+    <li>每个版本都有完整的 CJK 字符，同一个字优先用本地区的写法</li>
+    <li>提供桌面字体，以及按需加载的网页字体</li>
+  </ul>
+</section>
+
+<section class="chapter">
+  <p class="no">01</p>
+  <h2>为什么</h2>
+  <p>常见字体的半角 0.6em、全角 1em，宽度比 3:5，中英文混排很难对齐。</p>
+</section>
+
+<section>
+  <h2>纯文本表格对不齐</h2>
+  <div class="cols">
+    <div>
+      <p>这一页用的是 PlemoCJK，所以能对齐：</p>
+      <pre><code>|title1| 标题2 |
+|------|-------|
+|内容01|context|</code></pre>
+      <p>一般的编辑器里，汉字 1em 而字母 0.6em，含中文的行就短了一截。</p>
+    </div>
+    <figure>
+      <img src="images/plemocjk-misaligned.png" alt="编辑器里的同一张表格，含中文的两行比分隔线那一行短" style="height: calc(var(--line-height) * 5)">
+      <figcaption>半角 0.6em、全角 1em 的字体</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>凑成 1:2 的几种做法</h2>
+  <table>
+    <thead>
+      <tr><th>字体</th><th>半角</th><th>全角</th><th>代价</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Sarasa Gothic</td><td>0.5em</td><td>1em</td><td>英文多时太挤</td></tr>
+      <tr><td>PlemolJP / PlemoCJK</td><td>0.528em</td><td>1.056em</td><td>字母缩放，汉字加间距</td></tr>
+      <tr><td>Maple Mono CN</td><td>0.6em</td><td>1.2em</td><td>汉字之间偏松</td></tr>
+    </tbody>
+  </table>
+  <p>PlemolJP 放弃了汉字 1em 的习惯，换来更和谐的排版，所以选它做基础。</p>
+</section>
+
+<section>
+  <h2>同样字号下的对比</h2>
+  <figure>
+    <img src="images/plemocjk-compare.png" alt="同一段中英文混排的文字分别用四种字体显示" style="height: calc(var(--line-height) * 9)">
+    <figcaption>从上到下：Sarasa Mono SC、PlemoCJK SC、PlemoCJK Term SC、Maple Mono CN</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>三个变体</h2>
+  <table>
+    <thead>
+      <tr><th>变体</th><th>半角 / 全角</th><th>箭头、框线</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>default</td><td>528 / 1056</td><td>全角</td><td>中文为主，比如这份幻灯片</td></tr>
+      <tr><td>Term</td><td>600 / 1200</td><td>半角</td><td>终端，英文为主且要严格对齐</td></tr>
+      <tr><td>Natural</td><td>600 / 1000</td><td>全角</td><td>对齐要求不高的场合</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="chapter">
+  <p class="no">02</p>
+  <h2>怎么做</h2>
+  <p>扩充字体本身不复杂，精力都花在微调上。</p>
+</section>
+
+<section>
+  <h2>歧义宽度的字符</h2>
+  <p>有些字符在东亚编码里算全角，在别处算半角。Term 一律按半角，其他变体这样划分：</p>
+  <div class="cols">
+    <dl>
+      <dt>半角</dt>
+      <dd>拉丁符号 § ° ± × ÷</dd>
+      <dd>数学运算符 ∑ ∫ ≠ √ ∞</dd>
+      <dd>希腊和西里尔字母 α Ω А я</dd>
+      <dd>弯引号 “ ” ‘ ’</dd>
+    </dl>
+    <dl>
+      <dt>全角</dt>
+      <dd>箭头 ← → ⇒</dd>
+      <dd>几何图形 ■ ● ★</dd>
+      <dd>圈号和罗马数字 ① Ⅰ</dd>
+      <dd>框线，以及 … ※ №</dd>
+    </dl>
+  </div>
+  <p>画 ASCII art 时打开 <code>hwid</code>，全部按半角渲染。</p>
+</section>
+
+<section>
+  <h2>框线和行高</h2>
+  <div class="cols">
+    <div>
+      <p>框线按字体自带的 1.25 行高相接，到网页常用的 1.6 就断开了。<code>ss16</code> 把它们拉长：</p>
+      <pre><code>pre {
+  line-height: 1.6;
+  font-feature-settings:
+    "hwid", "ss16";
+}</code></pre>
+    </div>
+    <figure>
+<pre>┌────────────┐  █ ░ ▒ ▓
+│ ss16 打开  │  █ ░ ▒ ▓
+└────────────┘  █ ░ ▒ ▓</pre>
+      <figcaption>框线和块元素在 1.6 行高下相接</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>网页字体：一个 CSS 比十六个快</h2>
+  <div class="cols aside">
+    <pre><code>/* 1 */
+@font-face {
+  font-family: 'PlemoCJK SC';
+  font-weight: 100;
+  src: url('SC/PlemoCJK-SC-Thin.1.woff2');
+  unicode-range: U+2DB-587;
+}
+/* …分片 1 的其余十五个样式… */</code></pre>
+    <div>
+      <p>按 Noto Sans SC 的 <code>unicode-range</code> 切成两百多片，只下载用到的。</p>
+      <p>同一分片的规则排在一起，gzip 能去重：CSS 是 16 倍，传输不到 2 倍。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>使用</h2>
+  <ul>
+    <li>桌面字体：GitHub Releases</li>
+    <li>网页字体：npm，每个变体和地区一个包，比如 <code>plemocjk-sc</code></li>
+    <li>用法：仓库里的 <code>README-zh.md</code></li>
+  </ul>
+  <p><a href="https://github.com/nexustar/PlemoCJK">github.com/nexustar/PlemoCJK</a></p>
+</section>
+
+<script src="../slides.js"></script>
+</body>
+</html>

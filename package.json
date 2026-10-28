@@ -1,0 +1,12 @@
+{
+  "name": "monospace-slide",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node tools/check.mjs",
+    "pdf": "node tools/check.mjs --pdf"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.61.0"
+  }
+}
